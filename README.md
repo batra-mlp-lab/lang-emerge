@@ -12,7 +12,6 @@ dialogs between conversational agents (Abot and QBot), which talk about
 instances in an abstract world.  
 
 If you find this code useful, consider citing our work:
-**replace with actual citation**
 
 ```
 @inproceedings{visdial,
@@ -51,8 +50,7 @@ pip install json
 ## Usage
 Checkout `run_me.sh` to see how train our model.
 
-Pretrained models coming soon!
-Detailed documentation coming soon!
+Pretrained models and detailed documentation coming soon!
 
 ## Contributors
 
