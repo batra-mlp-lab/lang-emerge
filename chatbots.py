@@ -75,6 +75,7 @@ class ChatBot(nn.Module):
         # if evaluating
         if self.evalFlag:
             _, actions = outDistr.max(1);
+            actions = actions.unsqueeze(1);
         else:
             actions = outDistr.multinomial();
             # record actions
@@ -268,8 +269,8 @@ class Team:
         self.reward.fill_(self.rlNegReward);
 
         # both attributes need to match
-        firstMatch = self.guessToken[0].data == gtLabels[:, 0];
-        secondMatch = self.guessToken[1].data == gtLabels[:, 1];
+        firstMatch = self.guessToken[0].data == gtLabels[:, 0:1];
+        secondMatch = self.guessToken[1].data == gtLabels[:, 1:2];
         self.reward[firstMatch & secondMatch] = self.rlScale;
 
         # reinforce all actions for qBot, aBot
