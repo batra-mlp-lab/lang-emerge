@@ -32,6 +32,9 @@ class Dataloader:
         aOutVocab = [chr(ii + 65) for ii in xrange(params['aOutVocab'])];
         aInVocab =  qOutVocab + aOutVocab;
         qInVocab = aOutVocab + qOutVocab + taskVocab;
+        # Add overhear from other team to the InVocabs
+        aInVocab += qOutVocab
+        qInVocab += aOutVocab
 
         # pack parameters
         self.params = {'numTasks': self.numTasks, 'taskSelect': self.taskDefn,\
