@@ -321,9 +321,16 @@ class Team:
         firstMatch2 = self.guessToken2[0].data == gtLabels2[:, 0:1];
         secondMatch2 = self.guessToken2[1].data == gtLabels2[:, 1:2];
         match2 = firstMatch2 & secondMatch2
-        # assign reward only if correct and other team incorrect
-        self.reward1[match1 & ~match2] = self.rlScale;
-        self.reward2[match2 & ~match1] = self.rlScale;
+        # assign reward according to matrix (1 is rlScale):
+        #                  | team 2 correct | team 2 incorrect
+        # team 1 correct   | (1,1)          | (10,-100)
+        # team 1 incorrect | (-100,10)      | (-10,-10)
+        self.reward1[match1 & match2] = self.rlScale;
+        self.reward1[match1 & ~match2] = 10 * self.rlScale;
+        self.reward1[~match1 & match2] = 10 * self.rlNegReward;
+        self.reward2[match1 & match2] = self.rlScale;
+        self.reward2[~match1 & match2] = 10 * self.rlScale;
+        self.reward2[match1 & ~match2] = 10 * self.rlNegReward;
 
         # reinforce all actions for qBot, aBot
         self.qBot1.reinforce(self.reward1);
