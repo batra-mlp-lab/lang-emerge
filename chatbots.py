@@ -366,7 +366,7 @@ class Team:
         modules = ['rnn', 'inNet', 'outNet', 'imgNet', \
                             'predictRNN', 'predictNet'];
         # savedModel is an instance of dict
-        dictSaved = isinstance(savedModel['qBot'], dict);
+        dictSaved = isinstance(savedModel['qBot1'], dict);
 
         for agentName in ['aBot1', 'qBot1', 'aBot2', 'qBot2']:
             agent = getattr(self, agentName);

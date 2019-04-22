@@ -45,29 +45,44 @@ for dtype in dtypes:
     # evaluate on the train dataset, using greedy policy
     images, tasks, labels = data.getCompleteData(dtype);
     # forward pass
-    preds, _, talk = team.forward(Variable(images), Variable(tasks), True);
+    preds1,preds2,_,_,talk1,talk2 = team.forward(Variable(images),\
+        Variable(tasks), Variable(images), Variable(tasks), True);
 
     # compute accuracy for first, second and both attributes
-    firstMatch = preds[0].data == labels[:, 0].long();
-    secondMatch = preds[1].data == labels[:, 1].long();
-    matches = firstMatch & secondMatch;
-    atleastOne = firstMatch | secondMatch;
+    firstMatch1 = preds1[0].data == labels[:, 0].long();
+    secondMatch1 = preds1[1].data == labels[:, 1].long();
+    matches1 = firstMatch1 & secondMatch1;
+    atleastOne1 = firstMatch1 | secondMatch1;
+    firstMatch2 = preds2[0].data == labels[:, 0].long();
+    secondMatch2 = preds2[1].data == labels[:, 1].long();
+    matches2 = firstMatch2 & secondMatch2;
+    atleastOne2 = firstMatch2 | secondMatch2;
 
     # compute accuracy
-    firstAcc = 100 * torch.mean(firstMatch.float());
-    secondAcc = 100 * torch.mean(secondMatch.float());
-    atleastAcc = 100 * torch.mean(atleastOne.float());
-    accuracy = 100 * torch.mean(matches.float());
-    print('\nOverall accuracy [%s]: %.2f (f: %.2f s: %.2f, atleast: %.2f)'\
-                    % (dtype, accuracy, firstAcc, secondAcc, atleastAcc));
+    firstAcc1 = 100 * torch.mean(firstMatch1.float());
+    secondAcc1 = 100 * torch.mean(secondMatch1.float());
+    atleastAcc1 = 100 * torch.mean(atleastOne1.float());
+    accuracy1 = 100 * torch.mean(matches1.float());
+    firstAcc2 = 100 * torch.mean(firstMatch2.float());
+    secondAcc2 = 100 * torch.mean(secondMatch2.float());
+    atleastAcc2 = 100 * torch.mean(atleastOne2.float());
+    accuracy2 = 100 * torch.mean(matches2.float());
+    print('\nTeam 1: Overall accuracy [%s]: %.2f (f: %.2f s: %.2f, atleast: %.2f)'\
+                    % (dtype, accuracy1, firstAcc1, secondAcc1, atleastAcc1));
+    print('\nTeam 2: Overall accuracy [%s]: %.2f (f: %.2f s: %.2f, atleast: %.2f)'\
+                    % (dtype, accuracy2, firstAcc2, secondAcc2, atleastAcc2));
 
     # pretty print
-    talk = data.reformatTalk(talk, preds, images, tasks, labels);
+    talk1 = data.reformatTalk(talk1, preds1, images, tasks, labels);
+    talk2 = data.reformatTalk(talk2, preds2, images, tasks, labels);
     if 'final' in loadPath:
         savePath = loadPath.replace('final', 'chatlog-'+dtype);
     elif 'inter' in loadPath:
         savePath = loadPath.replace('inter', 'chatlog-'+dtype);
-    savePath = savePath.replace('pickle', 'json');
+    savePath1 = savePath.replace('.pickle', '_1.json');
+    savePath2 = savePath.replace('.pickle', '_2.json');
     print('Saving conversations: %s' % savePath)
-    with open(savePath, 'w') as fileId: json.dump(talk, fileId);
-    saveResultPage(savePath);
+    with open(savePath1, 'w') as fileId:json.dump(talk1, fileId);
+    with open(savePath2, 'w') as fileId:json.dump(talk2, fileId);
+    saveResultPage(savePath1);
+    saveResultPage(savePath2);

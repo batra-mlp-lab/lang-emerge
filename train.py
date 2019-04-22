@@ -111,7 +111,7 @@ for iterId in xrange(params['numEpochs'] * numIterPerEpoch):
     if iterId > 0 and iterId % (10000*numIterPerEpoch) == 0:
         team.saveModel(savePath, optimizer, params);
 
-    #if iterId % 100 != 0: continue;
+    if iterId % 100 != 0: continue;
 
     time = strftime("%a, %d %b %Y %X", gmtime());
     print('[%s][Iter: %d][Ep: %.2f][R1: %.4f][Tr1: %.2f Te1: %.2f]' % \
