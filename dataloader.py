@@ -213,7 +213,7 @@ class Dataloader:
             conv['gt'] = [self.invAttrVocab[labels[ii, jj]] for jj in xrange(2)];
             conv['task'] = [self.attributes[jj] \
                                         for jj in self.taskSelect[tasks[ii]]];
-            conv['pred'] = [self.invAttrVocab[preds[jj].data[ii, 0]] \
+            conv['pred'] = [self.invAttrVocab[preds[jj].data[ii]] \
                                                 for jj in xrange(2)];
             conv['chat'] = [qVocab[talk[0].data[ii]], \
                             aVocab[talk[1].data[ii]]]
