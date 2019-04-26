@@ -28,7 +28,7 @@ class ChatBot(nn.Module):
         # modules (common)
         self.inNet = nn.Embedding(self.inVocabSize, self.embedSize);
         self.outNet = nn.Linear(self.hiddenSize, self.outVocabSize);
-        self.softmax = nn.Softmax();
+        self.softmax = nn.Softmax(dim=1);
 
         # initialize weights
         initializeWeights([self.inNet, self.outNet], 'xavier');
@@ -79,23 +79,24 @@ class ChatBot(nn.Module):
         # if evaluating
         if self.evalFlag:
             _, actions = outDistr.max(1);
-            actions = actions.unsqueeze(1);
         else:
             m = Categorical(outDistr);
-            actions = m.sample().unsqueeze(1);
+            actions = m.sample();
             # record actions
-            self.actions.append(actions);
-            self.actionLosses.append(-m.log_prob(actions))
-        return actions.squeeze(1);
+            self.actions.append(actions.unsqueeze(1));
+            self.actionLosses.append(-m.log_prob(actions).unsqueeze(1));
+        return actions;
 
     # reinforce each state with reward
     def reinforce(self, rewards):
         for i in range(len(self.actionLosses)):
-            self.actionLosses[i] *= rewards
+            self.actionLosses[i] *= rewards;
 
     # backward computation
     def performBackward(self):
-        autograd.backward(self.actionLosses, [None for _ in self.actions]);
+        autograd.backward(self.actionLosses,
+            [torch.ones(a.data.shape) for a in self.actionLosses],
+            retain_graph=True);
 
     # switch mode to evaluate
     def evaluate(self): self.evalFlag = True;
@@ -169,15 +170,17 @@ class Questioner(ChatBot):
         outDistr = self.softmax(self.predictNet(self.hState));
 
         # if evaluating
-        if self.evalFlag: _, actions = outDistr.max(1);
+        if self.evalFlag:
+            _, actions = outDistr.max(1);
+            return actions, outDistr;
         else:
-            m = Categorical(outDistr)
-            actions = m.sample().unsqueeze(1)
+            m = Categorical(outDistr);
+            actions = m.sample();
             # record actions
-            self.actions.append(actions);
-            self.actionLosses.append(-m.log_prob(actions))
+            self.actions.append(actions.unsqueeze(1));
+            self.actionLosses.append(-m.log_prob(actions).unsqueeze(1));
 
-        return actions, outDistr;
+        return actions.unsqueeze(1), outDistr;
 
     # returning the answer, from the task
     def predict(self, tasks, numTokens):
@@ -296,7 +299,7 @@ class Team:
 
         # cummulative reward
         batchReward = torch.mean(self.reward)/self.rlScale;
-        if self.totalReward == None: self.totalReward = batchReward;
+        if self.totalReward is None: self.totalReward = batchReward;
         self.totalReward = 0.95 * self.totalReward + 0.05 * batchReward;
 
         return batchReward;
