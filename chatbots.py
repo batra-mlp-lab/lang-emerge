@@ -77,7 +77,7 @@ class ChatBot(nn.Module):
             _, actions = outDistr.max(1);
             actions = actions.unsqueeze(1);
         else:
-            actions = outDistr.multinomial();
+            actions = outDistr.multinomial(1);
             # record actions
             self.actions.append(actions);
         return actions.squeeze(1);
@@ -124,7 +124,7 @@ class Answerer(ChatBot):
     def embedImage(self, batch):
         embeds = self.imgNet(batch);
         # concat instead of add
-        features = torch.cat(embeds.transpose(0, 1), 1);
+        features = torch.cat(tuple(embeds.transpose(0, 1)), 1);
         # add features
         #features = torch.sum(embeds, 1).squeeze(1);
 
@@ -165,7 +165,7 @@ class Questioner(ChatBot):
         # if evaluating
         if self.evalFlag: _, actions = outDistr.max(1);
         else:
-            actions = outDistr.multinomial();
+            actions = outDistr.multinomial(1);
             # record actions
             self.actions.append(actions);
 
