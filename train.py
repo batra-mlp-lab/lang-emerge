@@ -12,6 +12,7 @@ from chatbots import Team
 from dataloader import Dataloader
 import options
 from time import gmtime, strftime
+import matplotlib.pyplot as plt
 
 # read the command line options
 options = options.read();
@@ -48,6 +49,8 @@ savePath = 'models/tasks_inter_%dH_%.4flr_%r_%d_%d.pickle' %\
 matches = {};
 accuracy = {};
 bestAccuracy = 0;
+trainAccHistory = [];
+testAccHistory = [];
 for iterId in xrange(params['numEpochs'] * numIterPerEpoch):
     epoch = float(iterId)/numIterPerEpoch;
 
@@ -98,6 +101,8 @@ for iterId in xrange(params['numEpochs'] * numIterPerEpoch):
     print('[%s][Iter: %d][Ep: %.2f][R: %.4f][Tr: %.2f Te: %.2f]' % \
                                 (time, iterId, epoch, team.totalReward,\
                                 accuracy['train'], accuracy['test']))
+    trainAccHistory.append(accuracy['train']);
+    testAccHistory.append(accuracy['test']);
 #------------------------------------------------------------------------
 # save final model with a time stamp
 timeStamp = strftime("%a-%d-%b-%Y-%X", gmtime());
@@ -106,3 +111,10 @@ finalSavePath = savePath.replace('inter', replaceWith);
 print('Saving : ' + finalSavePath)
 team.saveModel(finalSavePath, optimizer, params);
 #------------------------------------------------------------------------
+# Plot train and test accuracy over epochs
+plt.plot(trainAccHistory);
+plt.plot(testAccHistory);
+plt.title('Accuracy vs Epochs');
+plt.xlabel('Epochs (x100)');
+plt.ylabel('Accuracy (%)');
+plt.show();
