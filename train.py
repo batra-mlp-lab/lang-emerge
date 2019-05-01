@@ -12,7 +12,7 @@ from chatbots import Team
 from dataloader import Dataloader
 import options
 from time import gmtime, strftime
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 
 # read the command line options
 options = options.read();
@@ -83,7 +83,7 @@ for iterId in xrange(params['numEpochs'] * numIterPerEpoch):
         firstMatch = guess[0].data == labels[:, 0].long();
         secondMatch = guess[1].data == labels[:, 1].long();
         matches[dtype] = firstMatch & secondMatch;
-        accuracy[dtype] = 100*torch.sum(matches[dtype])\
+        accuracy[dtype] = 100*torch.sum(matches[dtype]).float()\
                                     /float(matches[dtype].size(0));
     # switch to train
     team.train();
@@ -94,6 +94,9 @@ for iterId in xrange(params['numEpochs'] * numIterPerEpoch):
     # save for every 5k epochs
     if iterId > 0 and iterId % (10000*numIterPerEpoch) == 0:
         team.saveModel(savePath, optimizer, params);
+        historySavePath = savePath.replace('inter', 'history')
+        with open(historySavePath, 'wb') as f:
+            pickle.dump([trainAccHistory, testAccHistory], f)
 
     if iterId % 100 != 0: continue;
 
@@ -112,9 +115,12 @@ print('Saving : ' + finalSavePath)
 team.saveModel(finalSavePath, optimizer, params);
 #------------------------------------------------------------------------
 # Plot train and test accuracy over epochs
-plt.plot(trainAccHistory);
-plt.plot(testAccHistory);
-plt.title('Accuracy vs Epochs');
-plt.xlabel('Epochs (x100)');
-plt.ylabel('Accuracy (%)');
-plt.show();
+#plt.plot(trainAccHistory);
+#plt.plot(testAccHistory);
+#plt.title('Accuracy vs Epochs');
+#plt.xlabel('Epochs (x100)');
+#plt.ylabel('Accuracy (%)');
+#plt.show();
+historySavePath = finalSavePath.replace('final', 'history')
+with open(historySavePath, 'wb') as f:
+    pickle.dump([trainAccHistory, testAccHistory], f)
