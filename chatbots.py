@@ -4,6 +4,7 @@ import torch
 import torch.nn as nn
 from torch.autograd import Variable
 import torch.autograd as autograd
+from torch.distributions import Categorical
 import sys
 from utilities import initializeWeights
 
@@ -21,12 +22,13 @@ class ChatBot(nn.Module):
         self.hState = torch.Tensor();
         self.cState = torch.Tensor();
         self.actions = [];
+        self.actionLosses = [];
         self.evalFlag = False;
 
         # modules (common)
         self.inNet = nn.Embedding(self.inVocabSize, self.embedSize);
         self.outNet = nn.Linear(self.hiddenSize, self.outVocabSize);
-        self.softmax = nn.Softmax();
+        self.softmax = nn.Softmax(dim=1);
 
         # initialize weights
         initializeWeights([self.inNet, self.outNet], 'xavier');
@@ -46,7 +48,9 @@ class ChatBot(nn.Module):
             self.cState = self.cState.cuda();
 
         # new episode
-        if not retainActions: self.actions = [];
+        if not retainActions:
+            self.actions = [];
+            self.actionLosses = [];
 
     # freeze agent
     def freeze(self):
@@ -75,21 +79,24 @@ class ChatBot(nn.Module):
         # if evaluating
         if self.evalFlag:
             _, actions = outDistr.max(1);
-            actions = actions.unsqueeze(1);
         else:
-            actions = outDistr.multinomial();
+            m = Categorical(outDistr);
+            actions = m.sample();
             # record actions
-            self.actions.append(actions);
-        return actions.squeeze(1);
+            self.actions.append(actions.unsqueeze(1));
+            self.actionLosses.append(-m.log_prob(actions).unsqueeze(1));
+        return actions;
 
     # reinforce each state with reward
     def reinforce(self, rewards):
-        for action in self.actions: action.reinforce(rewards);
+        for i in range(len(self.actionLosses)):
+            self.actionLosses[i] *= rewards;
 
     # backward computation
     def performBackward(self):
-        autograd.backward(self.actions, [None for _ in self.actions],\
-                                                retain_variables=True);
+        autograd.backward(self.actionLosses,
+            [torch.ones(a.data.shape) for a in self.actionLosses],
+            retain_graph=True);
 
     # switch mode to evaluate
     def evaluate(self): self.evalFlag = True;
@@ -125,7 +132,7 @@ class Answerer(ChatBot):
     def embedImage(self, batch):
         embeds = self.imgNet(batch);
         # concat instead of add
-        features = torch.cat(embeds.transpose(0, 1), 1);
+        features = torch.cat(tuple(embeds.transpose(0, 1)), 1);
         # add features
         #features = torch.sum(embeds, 1).squeeze(1);
 
@@ -165,13 +172,17 @@ class Questioner(ChatBot):
         outDistr = self.softmax(self.predictNet(self.hState));
 
         # if evaluating
-        if self.evalFlag: _, actions = outDistr.max(1);
+        if self.evalFlag:
+            _, actions = outDistr.max(1);
+            return actions, outDistr;
         else:
-            actions = outDistr.multinomial();
+            m = Categorical(outDistr);
+            actions = m.sample();
             # record actions
-            self.actions.append(actions);
+            self.actions.append(actions.unsqueeze(1));
+            self.actionLosses.append(-m.log_prob(actions).unsqueeze(1));
 
-        return actions, outDistr;
+        return actions.unsqueeze(1), outDistr;
 
     # returning the answer, from the task
     def predict(self, tasks, numTokens):
@@ -354,8 +365,8 @@ class Team:
         # cummulative reward
         batchReward1 = torch.mean(self.reward1)/self.rlScale;
         batchReward2 = torch.mean(self.reward2)/self.rlScale;
-        if self.totalReward1 == None: self.totalReward1 = batchReward1;
-        if self.totalReward2 == None: self.totalReward2 = batchReward2;
+        if self.totalReward1 is None: self.totalReward1 = batchReward1;
+        if self.totalReward2 is None: self.totalReward2 = batchReward2;
         self.totalReward1 = 0.95 * self.totalReward1 + 0.05 * batchReward1;
         self.totalReward2 = 0.95 * self.totalReward2 + 0.05 * batchReward2;
 

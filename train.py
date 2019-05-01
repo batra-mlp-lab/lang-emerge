@@ -12,6 +12,7 @@ from chatbots import Team
 from dataloader import Dataloader
 import options
 from time import gmtime, strftime
+#import matplotlib.pyplot as plt
 
 # read the command line options
 options = options.read();
@@ -53,6 +54,10 @@ matches1 = {};
 accuracy1 = {};
 matches2 = {};
 accuracy2 = {};
+trainAccHistory1 = [];
+testAccHistory1 = [];
+trainAccHistory2 = [];
+testAccHistory2 = [];
 for iterId in xrange(params['numEpochs'] * numIterPerEpoch):
     epoch = float(iterId)/numIterPerEpoch;
 
@@ -94,22 +99,30 @@ for iterId in xrange(params['numEpochs'] * numIterPerEpoch):
         firstMatch1 = guess1[0].data == labels[:, 0].long();
         secondMatch1 = guess1[1].data == labels[:, 1].long();
         matches1[dtype] = firstMatch1 & secondMatch1;
-        accuracy1[dtype] = 100*torch.sum(matches1[dtype])\
+        accuracy1[dtype] = 100*torch.sum(matches1[dtype]).float()\
                                     /float(matches1[dtype].size(0));
         firstMatch2 = guess2[0].data == labels[:, 0].long();
         secondMatch2 = guess2[1].data == labels[:, 1].long();
         matches2[dtype] = firstMatch2 & secondMatch2;
-        accuracy2[dtype] = 100*torch.sum(matches2[dtype])\
+        accuracy2[dtype] = 100*torch.sum(matches2[dtype]).float()\
                                     /float(matches2[dtype].size(0));
     # switch to train
     team.train();
 
     # break if train accuracy reaches 100%
-    if accuracy1['train'] == 100 and accuracy2['train'] == 100: break;
+    if accuracy1['train'] == 100 or accuracy2['train'] == 100: break;
 
     # save for every 5k epochs
     if iterId > 0 and iterId % (10000*numIterPerEpoch) == 0:
         team.saveModel(savePath, optimizer, params);
+        historySavePath = savePath.replace('inter', 'history')
+        with open(historySavePath, 'wb') as f:
+            pickle.dump({
+                    'train1': trainAccHistory1,
+                    'test1': testAccHistory1,
+                    'train2': trainAccHistory2,
+                    'test2': testAccHistory2
+                }, f)
 
     if iterId % 100 != 0: continue;
 
@@ -120,6 +133,10 @@ for iterId in xrange(params['numEpochs'] * numIterPerEpoch):
     print('[%s][Iter: %d][Ep: %.2f][R2: %.4f][Tr2: %.2f Te2: %.2f]' % \
                                 (time, iterId, epoch, team.totalReward2,\
                                 accuracy2['train'], accuracy2['test']))
+    trainAccHistory1.append(accuracy1['train']);
+    testAccHistory1.append(accuracy1['test']);
+    trainAccHistory2.append(accuracy2['train']);
+    testAccHistory2.append(accuracy2['test']);
 #------------------------------------------------------------------------
 # save final model with a time stamp
 timeStamp = strftime("%a-%d-%b-%Y-%X", gmtime());
@@ -128,3 +145,20 @@ finalSavePath = savePath.replace('inter', replaceWith);
 print('Saving : ' + finalSavePath)
 team.saveModel(finalSavePath, optimizer, params);
 #------------------------------------------------------------------------
+# Plot train and test accuracy over epochs
+#plt.plot(trainAccHistory1);
+#plt.plot(testAccHistory1);
+#plt.plot(trainAccHistory2);
+#plt.plot(testAccHistory2);
+#plt.title('Accuracy vs Epochs');
+#plt.xlabel('Epochs (x100)');
+#plt.ylabel('Accuracy (%)');
+#plt.show();
+historySavePath = finalSavePath.replace('final', 'history')
+with open(historySavePath, 'wb') as f:
+    pickle.dump({
+            'train1': trainAccHistory1,
+            'test1': testAccHistory1,
+            'train2': trainAccHistory2,
+            'test2': testAccHistory2
+        }, f)
