@@ -7,25 +7,33 @@ Code for the paper
 [Arxiv][1]  
 
 
-This repository contains code to **train**, **evaluate** and **visualize**
-dialogs between conversational agents (Abot and QBot), which talk about
+This repository contains code to **train**, **evaluate**, and **visualize**
+dialogs between conversational agents (Abot and QBot) that talk about
 instances in an abstract world.  
 
-If you find this code useful, consider citing our work:
+If you find this code useful, consider citing our work ([ACL Anthology](https://www.aclweb.org/anthology/D17-1321/)):
 
 ```
-@inproceedings{visdial,
-  title = {{N}atural {L}anguage {D}oes {N}ot {E}merge '{N}aturally' in {M}ulti-{A}gent {D}ialog},
-  author = {Satwik Kottur and Jos\'e M.F. Moura and Stefan Lee and Dhruv Batra},
-  journal = {CoRR},
-  volume = {abs/1706.08502},
-  year = {2017}
+@inproceedings{kottur-etal-2017-natural,
+    title = "Natural Language Does Not Emerge {`}Naturally{'} in Multi-Agent Dialog",
+    author = "Kottur, Satwik  and
+      Moura, Jos{\'e}  and
+      Lee, Stefan  and
+      Batra, Dhruv",
+    booktitle = "Proceedings of the 2017 Conference on Empirical Methods in Natural Language Processing",
+    month = Sep,
+    year = "2017",
+    address = "Copenhagen, Denmark",
+    publisher = "Association for Computational Linguistics",
+    url = "https://www.aclweb.org/anthology/D17-1321",
+    doi = "10.18653/v1/D17-1321",
+    pages = "2962--2967",
 }
 ```
 
 ## Setup
 
-All our code is implemented in [Pytorch][2].
+All our code is implemented in [PyTorch][2].
 
 Additionally, our code also uses some famous python packages that can be installed as follows:
 
@@ -58,7 +66,7 @@ Pretrained models and detailed documentation coming soon!
 
 ## License
 
-BSD
+BSD-3
 
 
 [1]: https://arxiv.org/abs/1706.08502
