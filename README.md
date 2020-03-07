@@ -33,7 +33,7 @@ If you find this code useful, consider citing our work ([ACL Anthology](https://
 
 ## Setup
 
-All our code is implemented in [PyTorch][2].
+All our code is implemented in [PyTorch][2]. Current version has been tested in Python 3.6 and PyTorch 1.4.
 
 Additionally, our code also uses some famous python packages that can be installed as follows:
 
