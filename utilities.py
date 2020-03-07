@@ -28,7 +28,7 @@ def initializeWeights(moduleList, itype):
 
             # If LSTMCell
             if name == 'LSTMCell':
-                for name, param in module._parameters.iteritems():
+                for name, param in module._parameters.items():
                     if 'bias' in name:
                         module._parameters[name].data.fill_(0.0);
                         #print('Initialized: %s' % name)
