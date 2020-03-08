@@ -190,7 +190,6 @@ class Dataloader:
             selectInds = selectInds.cuda()
             tasks = tasks.cuda()
         labels = batch.gather(1, selectInds)
-
         return batch, tasks, labels
 
     # converting to text
@@ -208,16 +207,17 @@ class Dataloader:
         for ii in range(numImgs):
             # conversation
             conv = {}
-            conv['image'] = [self.invAttrVocab[jj] for jj in images[ii]]
-            conv['gt'] = [self.invAttrVocab[labels[ii, jj]] for jj in range(2)]
-            conv['task'] = [self.attributes[jj] \
+            conv['image'] = [self.invAttrVocab[jj.item()] for jj in images[ii]]
+            conv['gt'] = [self.invAttrVocab[labels[ii, jj].item()]
+                          for jj in range(2)]
+            conv['task'] = [self.attributes[jj.item()]
                                         for jj in self.taskSelect[tasks[ii]]]
-            conv['pred'] = [self.invAttrVocab[preds[jj].data[ii, 0]] \
+            conv['pred'] = [self.invAttrVocab[preds[jj].data[ii].item()]
                                                 for jj in range(2)]
-            conv['chat'] = [qVocab[talk[0].data[ii]], \
+            conv['chat'] = [qVocab[talk[0].data[ii]],
                             aVocab[talk[1].data[ii]]]
             if len(talk) > 3:
-                conv['chat'].extend([qVocab[talk[2].data[ii]],\
+                conv['chat'].extend([qVocab[talk[2].data[ii]],
                                     aVocab[talk[3].data[ii]]])
             script.append(conv)
 

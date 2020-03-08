@@ -7,7 +7,6 @@ import torch.autograd as autograd
 import sys
 from utilities import initializeWeights
 
-import pdb, pickle
 #---------------------------------------------------------------------------
 # Parent class for both q and a bots
 class ChatBot(nn.Module):
@@ -326,5 +325,5 @@ class Team:
                 if hasattr(agent, module):
                     toSaveModule = getattr(agent, module)
                     toSave[agentName][module] = toSaveModule
-        # save as pickle
+        # save checkpoint.
         torch.save(toSave, savePath)

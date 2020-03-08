@@ -6,7 +6,7 @@ import torch.nn as nn
 from torch.autograd import Variable
 import torch.optim as optim
 
-import itertools, pdb, random, pickle, json
+import itertools, pdb, random, json
 import numpy as np
 from chatbots import Team
 from dataloader import Dataloader
@@ -26,7 +26,7 @@ if len(sys.argv) < 2:
 # load and compute on test
 loadPath = sys.argv[1]
 print('Loading model from: %s' % loadPath)
-with open(loadPath, 'r') as fileId: loaded = pickle.load(fileId)
+loaded = torch.load(loadPath)
 
 #------------------------------------------------------------------------
 # build dataset, load agents
@@ -67,7 +67,7 @@ for dtype in dtypes:
         savePath = loadPath.replace('final', 'chatlog-'+dtype)
     elif 'inter' in loadPath:
         savePath = loadPath.replace('inter', 'chatlog-'+dtype)
-    savePath = savePath.replace('pickle', 'json')
+    savePath = savePath.replace('tar', 'json')
     print('Saving conversations: %s' % savePath)
     with open(savePath, 'w') as fileId: json.dump(talk, fileId)
     saveResultPage(savePath)

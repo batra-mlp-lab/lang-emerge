@@ -6,7 +6,7 @@ import torch.nn as nn
 from torch.autograd import Variable
 import torch.optim as optim
 
-import itertools, pdb, random, pickle, os
+import itertools, pdb, random, os
 import numpy as np
 from chatbots import Team
 from dataloader import Dataloader
@@ -42,7 +42,7 @@ optimizer = optim.Adam([{'params': team.aBot.parameters(), \
 numIterPerEpoch = int(np.ceil(numInst['train']/params['batchSize']))
 numIterPerEpoch = max(1, numIterPerEpoch)
 count = 0
-savePath = 'models/tasks_inter_%dH_%.4flr_%r_%d_%d.pickle' %\
+savePath = 'models/tasks_inter_%dH_%.4flr_%r_%d_%d.tar' %\
             (params['hiddenSize'], params['learningRate'], params['remember'],\
             options['aOutVocab'], options['qOutVocab'])
 
@@ -90,7 +90,8 @@ for iterId in range(params['numEpochs'] * numIterPerEpoch):
     if accuracy['train'] == 100: break
 
     # save for every 5k epochs
-    if iterId > 0 and iterId % (10000*numIterPerEpoch) == 0:
+    # if iterId > 0 and iterId % (10000*numIterPerEpoch) == 0:
+    if iterId >= 0 and iterId % (10000*numIterPerEpoch) == 0:
         team.saveModel(savePath, optimizer, params)
 
     if iterId % 100 != 0: continue
