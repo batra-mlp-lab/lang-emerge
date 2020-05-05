@@ -177,7 +177,7 @@ class Questioner(ChatBot):
 
         for _ in range(numTokens):
             # explicit task dependence
-            taskEmbeds = self.inNet(tasks)
+            taskEmbeds = self.embedTask(tasks)
             guess, distr = self.guessAttribute(taskEmbeds)
 
             # record the guess and distribution
@@ -187,7 +187,7 @@ class Questioner(ChatBot):
         # return prediction
         return guessTokens, guessDistr
 
-    # Embedding the image
+    # Embedding the task
     def embedTask(self, tasks): return self.inNet(tasks + self.taskOffset)
 
 #---------------------------------------------------------------------------
